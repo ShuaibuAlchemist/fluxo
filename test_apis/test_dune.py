@@ -46,7 +46,7 @@ def test_dune():
         print(f"❌ Error: {str(e)}")
         return {"source": "Dune Analytics", "status": "❌ Error", "error": str(e)}
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     result = test_dune()
     print("\n" + "=" * 60)
     print(json.dumps(result, indent=2))
