@@ -66,7 +66,7 @@ def test_flipside():
         print(f"❌ Error: {str(e)}")
         return {"source": "Flipside Crypto", "status": "❌ Error", "error": str(e)}
 
-if _name_ == "_main_":
+if _name_ == "__main__":
     result = test_flipside()
     print("\n" + "=" * 60)
     print(json.dumps(result, indent=2))
