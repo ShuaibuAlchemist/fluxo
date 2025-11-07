@@ -47,7 +47,7 @@ from datetime import datetime
 from enum import Enum
 import logging
 
-logger = logging.getLogger(_name_)
+logger = logging.getLogger(__name__)
 
 
 class SentimentLevel(str, Enum):
