@@ -25,6 +25,6 @@ __all__ = [
     'risk_router',
     'x402_router',
     'yield_router',
-    'social_router'
+    'social_router',
     'alerts_router'
 ]
