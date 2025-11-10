@@ -15,7 +15,7 @@ import logging
 from pydantic import BaseModel
 from enum import Enum
 
-logger = logging.getLogger(_name_)
+logger = logging.getLogger(__name__)
 
 
 class ProtocolRiskLevel(str, Enum):
