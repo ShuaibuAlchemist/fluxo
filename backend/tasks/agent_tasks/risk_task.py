@@ -18,6 +18,9 @@ def risk_task(self, wallet_address: str, network: str = "mantle", market_correla
         )
         
         print(f'Running risk analysis for wallet: {wallet_address}')
+
+        # lazy import to avoidd circular dependency
+        from services.alert_manager import AlertManager
         
         # Initialize agents
         risk_agent = RiskAgent()
