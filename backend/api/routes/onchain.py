@@ -63,7 +63,6 @@ async def user_subscribed_tokens_update():
             data = message['data']
             # Match data for whale transfer pattern
             # If metched Return data
-            print('hello')
             for session_id, websocket in active_sessions.items():
                 try:
                     await websocket.send_text(data)

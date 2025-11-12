@@ -42,10 +42,12 @@ Week 1: Mock implementation based on framework
 Week 2: Real API integration with these sources
 """
 
+import logging
 from typing import List, Dict, Optional
 from datetime import datetime
 from enum import Enum
-import logging
+
+from core.config import REDIS_CONNECT
 
 logger = logging.getLogger(__name__)
 
@@ -224,11 +226,32 @@ class SocialAgent:
             }
         }
         
+        self.redis = REDIS_CONNECT
+        self.channel_name = "social_sentiment_channel"
+
         logger.info(f"SocialAgent initialized with Electus's research framework")
         logger.info(f"Tracking {len(self.narrative_keywords)} narrative keywords")
         total_influencers = sum(len(v) for v in self.tracked_influencers.values())
         logger.info(f"Monitoring {total_influencers} influencers")
     
+    async def Recieve_data_for_sentiment(self):
+        pubsub = self.redis.pubsub()
+        await pubsub.subscribe(self.channel_name)
+
+        async for message in pubsub.listen():
+            if message['type'] != 'message':
+                continue
+            data = message['data']
+            print(f"Received social sentiment data: {data}")
+            # Process the social sentiment data as needed
+
+            """"
+                Further sentiment analysis logic can be implemented here
+            """
+
+            # publish the processed sentiment data to other agents listening.
+            await self.redis.publish('processed_social_sentiment_channel', data)
+
     async def analyze_sentiment(
         self, 
         timeframe: str = "24h",

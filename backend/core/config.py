@@ -17,8 +17,7 @@ import os
 from pathlib import Path
 from typing import Final
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
-import redis
+from models.redis_connect import db_connector
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_PATH = BASE_DIR / '.env'
@@ -31,7 +30,7 @@ class Settings(BaseSettings):
     redis_host:str
     redis_port:int
     redis_password:str
-     
+
 
     model_config = SettingsConfigDict(
         env_file=ENV_PATH,
@@ -39,6 +38,12 @@ class Settings(BaseSettings):
         case_sensitive=False
     )
 
+
+class Redisconnect:
+   redis_connector = db_connector(max_connections=5)
+   redis_db = redis_connector.get_connection()
+
+REDIS_CONNECT = Redisconnect().redis_db
 
 DEFILLAMA_URL_ENDPOINTS: Final[dict[str, str]] = {
     'protocols': 'https://api.llama.fi/protocols',
