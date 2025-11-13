@@ -3,7 +3,7 @@ Execution Agent Celery Task - With Alert Triggering
 """
 from core import celery_app
 import asyncio
-from agents.execution_agent import ExecutionAgent
+from agents.execution_agent import execution_agent as ExecutionAgent
 from services.alert_manager import AlertManager
 
 
