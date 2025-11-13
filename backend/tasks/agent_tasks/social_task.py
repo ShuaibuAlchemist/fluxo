@@ -1,67 +1,93 @@
 """
-Social Sentiment Analysis Celery Task
-Integrates Muhammad's Social Agent with Freeman's Celery infrastructure
-Based on Electus's social sentiment research
+Social Sentiment Analysis Celery Task - With Alert Triggering
 """
 from core import celery_app
 import asyncio
 from agents.social_agent import SocialAgent
+from services.alert_manager import AlertManager
 
-@celery_app.task(bind=True, name="social_sentiment_analysis")
-def social_task(self, timeframe: str = "24h", focus_tokens: list = None):
+
+@celery_app.task(bind=True, name="social_analysis")
+def social_task(self, token_symbol: str, platforms: list = None, alert_threshold: float = 0.7):
     """
-    Background task for social sentiment analysis
+    Social sentiment analysis with alert triggering
     
     Args:
-        timeframe: Time period to analyze (1h, 24h, 7d)
-        focus_tokens: Optional list of tokens to focus analysis on
-    
-    Returns:
-        dict: Sentiment analysis results
+        token_symbol: Token to analyze (e.g., "MNT", "ETH")
+        platforms: List of platforms to check ["twitter", "farcaster", "reddit"]
+        alert_threshold: Sentiment score threshold for alerts (0-1)
     """
     try:
-        # Update task state
         self.update_state(
             state='PROCESSING',
-            meta={'status': 'Analyzing social sentiment...', 'progress': 0}
+            meta={'status': 'Fetching social sentiment...', 'progress': 0}
         )
         
-        print(f'Running social sentiment analysis for timeframe: {timeframe}')
+        print(f'Running social sentiment analysis for: {token_symbol}')
         
-        # Initialize Social Agent (using Electus's research)
-        social_agent = SocialAgent(use_mock=True)  # Week 1: mock data
+        # Lazy import to avoid circular dependency
+        from services.alert_manager import AlertManager
         
-        # Run async agent code in sync Celery task
+        # Initialize agents
+        social_agent = SocialAgent()
+        alert_manager = AlertManager()
+        
+        # Default platforms
+        if platforms is None:
+            platforms = ["twitter", "farcaster", "reddit"]
+        
+        # Run async agent code
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         
-        # Update progress
         self.update_state(
             state='PROCESSING',
-            meta={'status': 'Detecting narratives and influencer signals...', 'progress': 50}
+            meta={'status': 'Analyzing sentiment across platforms...', 'progress': 30}
         )
         
         # Execute sentiment analysis
-        sentiment = loop.run_until_complete(
-            social_agent.analyze_sentiment(timeframe, focus_tokens)
+        sentiment_result = loop.run_until_complete(
+            social_agent.analyze_sentiment(
+                token_symbol=token_symbol,
+                platforms=platforms
+            )
         )
+        
+        self.update_state(
+            state='PROCESSING',
+            meta={'status': 'Checking sentiment alerts...', 'progress': 70}
+        )
+        
+        # Trigger alerts for extreme sentiment
+        triggered_alerts = loop.run_until_complete(
+            alert_manager.check_sentiment_alerts(
+                token_symbol=token_symbol,
+                sentiment_score=sentiment_result.overall_score,
+                sentiment_trend=sentiment_result.trend,
+                volume_change=sentiment_result.volume_change,
+                threshold=alert_threshold
+            )
+        )
+        
         loop.close()
         
-        print(f'Sentiment analysis completed: {sentiment.level.value}')
+        print(f'Social analysis completed: {sentiment_result.overall_score}')
+        print(f'Triggered {len(triggered_alerts)} sentiment alerts')
         
-        # Return structured result
         return {
             'status': 'completed',
-            'timeframe': timeframe,
-            'focus_tokens': focus_tokens,
-            'sentiment_analysis': sentiment.to_dict(),
-            'agent': 'social'
+            'token_symbol': token_symbol,
+            'sentiment_analysis': sentiment_result.dict(),
+            'platforms_analyzed': platforms,
+            'alerts_triggered': len(triggered_alerts),
+            'alerts': [alert.to_dict() for alert in triggered_alerts],
+            'agent': 'social',
+            'version': '2.0_with_alerts'
         }
         
     except Exception as e:
-        print(f'Social sentiment analysis failed: {str(e)}')
+        print(f'Social analysis failed: {str(e)}')
         
-        # Update task state to failure
         self.update_state(
             state='FAILURE',
             meta={'error': str(e)}
