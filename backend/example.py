@@ -59,11 +59,19 @@ url = 'https://....../agent/macrostatus/{task_id}'
 
 # asyncio.run(main())
 
-import requests
+# import requests
 
-url = "http://0.0.0.0:8000/agent/portfolio/?address=0x5C30940A4544cA845272FE97c4A27F2ED2CD7B64"
+# url = "http://0.0.0.0:8000/agent/portfolio/?address=0x5C30940A4544cA845272FE97c4A27F2ED2CD7B64"
 
-response = requests.get(url)
-print(response.status_code)
-print(response.json())
+# response = requests.get(url)
+# print(response.status_code)
+# print(response.json())
 
+
+from data_pipeline.pipeline import Pipeline
+
+async def main():
+    pipeline = Pipeline()
+    data = await pipeline.user_portfolio('0x5C30940A4544cA845272FE97c4A27F2ED2CD7B64')
+
+asyncio.run(main())

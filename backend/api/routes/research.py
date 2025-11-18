@@ -1,15 +1,4 @@
 
-# from fastapi import APIRouter
-
-# router = APIRouter()
-
-# @router.get('/research')
-# async def research():
-
-#     # logic
-#     return {'agent':'research','status':'ok'}
-
-
 from fastapi import APIRouter
 from tasks.agent_tasks import research_task
 

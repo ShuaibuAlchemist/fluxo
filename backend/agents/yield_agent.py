@@ -11,6 +11,9 @@ class yield_agent:
 
     # Fetch yield protocol and yields
     async def yield_opportunity(self):
+        """
+            This is for demonstration purpose,  the actuall fetching should be from db not directly from source
+        """
         yield_protocols = await self.source.fetch_mantle_yield_protocols()
 
         return yield_protocols

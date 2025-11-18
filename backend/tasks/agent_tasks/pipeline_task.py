@@ -1,0 +1,55 @@
+import asyncio
+
+from data_pipeline.pipeline import Pipeline
+from celery import shared_task
+from core import celery_app
+
+
+pipeline = Pipeline()
+
+@shared_task
+def test():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    pipline = loop.run_until_complete(
+        pipeline.test_pipe()
+    )
+
+
+@shared_task
+def mantle_protocols():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    pipline = loop.run_until_complete(
+        pipeline.mantle_protocols()
+    )
+
+@shared_task
+def mantle_yield():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    pipline = loop.run_until_complete(
+        pipeline.mantle_yield()
+    )
+
+@celery_app.task
+def user_portfolio(wallet_address:str):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    portfolio_data = loop.run_until_complete(
+        pipeline.user_portfolio(wallet_address)
+    )
+    return portfolio_data
+
+@celery_app.task
+def user_token_balance(token_address:str,wallet_address:str):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    user_token_balance_data = loop.run_until_complete(
+        pipeline.user_token_balance(token_address,wallet_address)
+    )

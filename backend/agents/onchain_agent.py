@@ -28,8 +28,11 @@ class onchain_agent:
             # pubslish the whale data to other agents listening.
             await self.redis_db.publish('whale_watch_channel', data)
         
-    
+
     async def protocols(self):
+        """
+            This is for demonstration  the actuall fetching should be from db not directly from source
+        """
         protocols_data = await self.source.fetch_protocol_data()
 
         return protocols_data

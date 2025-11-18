@@ -31,6 +31,9 @@ class portfolio_agent:
 
     
     async def analyze_portfolio(self,wallet_address:str)->List:
+        """
+            This is for demonstration purpose,  the actuall fetching should be from db not directly from source
+        """
         wallet_portfolio = await self.source.user_portfolio_analysis(wallet_address)
         
         return wallet_portfolio

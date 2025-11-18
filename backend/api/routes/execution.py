@@ -1,16 +1,4 @@
 
-# from fastapi import APIRouter
-
-# router = APIRouter()
-
-# @router.get('/execution')
-# async def execution():
-
-#     # logic
-#     return {'agent':'execution','status':'ok'}
-
-
-
 from fastapi import APIRouter
 # from tasks import execution_task # TODO: create tasks
 

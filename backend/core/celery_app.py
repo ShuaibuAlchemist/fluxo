@@ -1,6 +1,9 @@
 from celery import Celery
 from celery.schedules import crontab
 from .config import Settings
+import sys,os
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 settings = Settings()
 
@@ -26,6 +29,7 @@ celery_app = Celery(
         'tasks.agent_tasks.yield_task',
         'tasks.alert_coordinator',
         'tasks.periodic_tasks',
+        'tasks.agent_tasks.pipeline_task'
     ],
 )
 
@@ -76,3 +80,14 @@ celery_app.conf.task_routes = {
     'tasks.macro_analysis': {'queue': 'macro_queue'},
     'tasks.*': {'queue': 'default'},
 }
+
+
+celery_app.conf.beat_schedule = {
+    'test_beat':{
+        'task':'tasks.agent_tasks.pipeline_task.mantle_yield',
+        'schedule':20,
+        'args':()
+    }
+}
+
+celery_app.autodiscover_tasks(['tasks'])

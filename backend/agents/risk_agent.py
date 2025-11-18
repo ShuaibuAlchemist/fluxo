@@ -229,77 +229,39 @@ class RiskAgent:
     
     async def check_contract_risk_with_audits(self, holdings: List[Dict]) -> Dict:
         """
-        Enhanced contract risk check with audit data
-        
-        Args:
-            holdings: List of token holdings with protocol info
-            
-        Returns:
-            Contract risk analysis with audit information
+        Fetch portfolio with protocol information
+        TODO Week 3: Real data from Freeman's data_pipeline
         """
-        audit_service = get_audit_service()
+
         
-        # Extract protocols
-        protocols = []
-        for holding in holdings:
-            protocol = holding.get('protocol', '').lower()
-            if protocol:
-                protocols.append(protocol)
-        
-        # Get audit information
-        audits = await audit_service.get_multiple_audits(protocols)
-        
-        # Calculate risk scores
-        risk_scores = []
-        critical_findings = []
-        
-        for protocol, audit_info in audits.items():
-            if audit_info["audit_status"] == "audited":
-                audit_data = audit_info["audit_data"]
-                
-                # Check critical issues
-                if audit_data.get("critical_issues", 0) > 0:
-                    critical_findings.append({
-                        "protocol": protocol,
-                        "issue": f"{audit_data['critical_issues']} critical issues found",
-                        "severity": "critical"
-                    })
-                
-                # Calculate risk score
-                score = audit_data.get("score", 50)
-                risk_score = max(0, 10 - (score / 10))
-                risk_scores.append(risk_score)
-            else:
-                risk_scores.append(7.0)
-                critical_findings.append({
-                    "protocol": protocol,
-                    "issue": "No audit information available",
-                    "severity": "high"
-                })
-        
-        avg_risk = sum(risk_scores) / len(risk_scores) if risk_scores else 5.0
-        audit_summary = audit_service.get_audit_summary(audits)
-        
-        return {
-            "contract_risk_score": round(avg_risk, 2),
-            "audit_coverage": audit_summary["audit_coverage"],
-            "audited_protocols": audit_summary["audited_protocols"],
-            "unaudited_protocols": audit_summary["unaudited_protocols"],
-            "critical_findings": critical_findings,
-            "detailed_audits": audits,
-            "risk_level": self._score_to_risk_level(avg_risk)
-        }
-    
-    def _score_to_risk_level(self, score: float) -> str:
-        """Convert risk score to level"""
-        if score < 3:
-            return "low"
-        elif score < 6:
-            return "medium"
-        elif score < 8:
-            return "high"
-        else:
-            return "critical"
+        # Mock portfolio for testing
+        mock_assets = [
+            PortfolioAsset(
+                token_symbol="mETH",
+                token_address="0x...",
+                balance=10.5,
+                usd_value=35000,
+                percentage_of_portfolio=70,
+                protocol="merchant_moe"  # Staked on Merchant Moe
+            ),
+            PortfolioAsset(
+                token_symbol="USDC",
+                token_address="0x...",
+                balance=10000,
+                usd_value=10000,
+                percentage_of_portfolio=20,
+                protocol="fusionx"  # Liquidity on FusionX
+            ),
+            PortfolioAsset(
+                token_symbol="MNT",
+                token_address="0x...",
+                balance=5000,
+                usd_value=5000,
+                percentage_of_portfolio=10,
+                protocol=None  # Held in wallet
+            )
+        ]
+        return mock_assets
     
     def _calculate_concentration(self, assets: List[PortfolioAsset]) -> float:
         """Calculate concentration risk with HHI"""
