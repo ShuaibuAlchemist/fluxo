@@ -42,7 +42,7 @@ def coordinate_alerts(wallet_address: str, analysis_types: List[str] = None):
         task_group.append(social_task.s("MNT"))  # TODO: Extract from portfolio
     
     if "macro" in analysis_types:
-        task_group.append(macro_task.s())
+        task_group.append(macro_task.s(wallet_address))
     
     # Execute all tasks in parallel
     job = group(task_group)
@@ -105,3 +105,27 @@ def batch_alert_processing(wallet_addresses: List[str]):
         'total_alerts_triggered': total_alerts,
         'summary': results
     }
+
+
+
+@celery_app.task(name="smart_money_process")
+def process_smart_money(event: dict):
+    """Process a smart money event by delegating to the orchestrator.
+
+    This replaces the previous behaviour that simply re-published the event.
+    The orchestrator will call other agents (market, social, portfolio, AI) to
+    build and dispatch a final alert payload.
+    """
+    if not event:
+        return
+
+    from agents.orchestrator import AlertOrchestrator
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        result = loop.run_until_complete(AlertOrchestrator().process_event(event))
+        return result
+    finally:
+        loop.close()

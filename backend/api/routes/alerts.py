@@ -8,7 +8,7 @@ import logging
 
 from api.models.alerts import Alert
 from api.models.schemas import APIResponse
-from services.alert_manager import AlertManager
+# from services.alert_manager import AlertManager
 from tasks.alert_coordinator import coordinate_alerts, batch_alert_processing
 from tasks.periodic_tasks import periodic_portfolio_monitoring
 from celery.result import AsyncResult
@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # Initialize alert manager (in production, use dependency injection)
-alert_manager = AlertManager()
 
 
 @router.get("/")
@@ -35,6 +34,8 @@ async def get_alerts(
     - wallet_address: Optional filter by wallet
     - limit: Max number of alerts (default 50)
     """
+    
+    alert_manager = AlertManager()
     try:
         alerts = alert_manager.get_alerts(wallet_address, limit)
         
@@ -57,6 +58,8 @@ async def get_undelivered_alerts():
     """
     Get all undelivered alerts (for x402 delivery service)
     """
+    
+    alert_manager = AlertManager()
     try:
         alerts = alert_manager.get_undelivered_alerts()
         
@@ -81,6 +84,7 @@ async def mark_alert_delivered(
     Mark an alert as delivered
     Used by x402 delivery service after successful delivery
     """
+    alert_manager = AlertManager()
     try:
         alert_manager.mark_delivered(alert_id, delivery_method)
         
@@ -307,6 +311,7 @@ async def trigger_manual_monitoring():
 
 @router.get("/health")
 async def alerts_health():
+    alert_manager = AlertManager()
     """Alert system health check"""
     total_alerts = len(alert_manager.alerts)
     undelivered = len(alert_manager.get_undelivered_alerts())

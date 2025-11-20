@@ -20,3 +20,5 @@ class ChannelNames(Enum):
     RESEARCH = "research_channel"
     X402 = "x402_channel"
     YIELD = "yield_channel"
+    WHALE_MOVEMENT = "whale_movement"
+    SMART_MONEY = "smart_money"

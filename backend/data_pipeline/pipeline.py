@@ -15,6 +15,7 @@ from .transformation.transform_defillam_data import transform_protocol_data,tran
 from .transformation.transform_dune_data import transform_user_portfolio
 from .transformation.transform_mantleApi_data import transform_balance
 
+from .load.store import StoreData
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,8 @@ class Pipeline:
         self.defillama = Defillama()
         self.dune_service = DuneService()
         self.mantle_api = MantleAPI()
+        
+        self.storeData = StoreData()
 
         redis_connector = db_connector(max_connections=5)
         self.redis_db = redis_connector.get_connection()
@@ -40,28 +43,28 @@ class Pipeline:
         print('Started')
         protocol_data = await self.defillama.fetch_protocol_data()
         transformed_data =  transform_protocol_data(protocol_data)
-        print(transformed_data)
+        # print(transformed_data)
         if transformed_data:
+            self.storeData.store_protocol_data(transformed_data,data_name="protocols")
             # Save to db
             pass
+           
+            
     
     # Yield in Mantle Ecosystem
     async def mantle_yield(self):
-        print('started')
         yield_data = await self.defillama.fetch_mantle_yield_protocols()
         transformed_data = transform_yield_protocol(yield_data)
-        print(transformed_data)
-        if transformed_data:
-            print(transformed_data)
+        if transformed_data: 
+            self.storeData.store_protocol_data(transformed_data,data_name='yield_data')
             # save to db
-            pass
+           
 
     # User portfolio in Mantle
     async def user_portfolio(self,wallet_address:str):
         portfolio_data = await self.dune_service.user_portfolio_analysis(wallet_address)
-        transformed_data = transform_user_portfolio(portfolio_data)
+        transformed_data = transform_user_portfolio(portfolio_data,wallet_address)
         
-        print(transformed_data)
         if transformed_data:
             "Determine if to cache user portfolio "
             return transformed_data

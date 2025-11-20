@@ -7,8 +7,15 @@ from core import celery_app
 
 pipeline = Pipeline()
 
+"""
+scheduler:
+    pipeline task are run on schedule
+    The end output are stored in the database for easy acccess by the API
+"""
+
 @shared_task
 def test():
+    print('testing...')
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
@@ -28,12 +35,14 @@ def mantle_protocols():
 
 @shared_task
 def mantle_yield():
+    print('starting Mantle yield')
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     pipline = loop.run_until_complete(
         pipeline.mantle_yield()
     )
+    # pipeline.mantle_yield()
 
 @celery_app.task
 def user_portfolio(wallet_address:str):

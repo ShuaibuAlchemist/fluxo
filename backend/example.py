@@ -68,10 +68,44 @@ url = 'https://....../agent/macrostatus/{task_id}'
 # print(response.json())
 
 
-from data_pipeline.pipeline import Pipeline
+# from data_pipeline.pipeline import Pipeline
+
+# async def main():
+#     pipeline = Pipeline()
+#     data = await pipeline.user_portfolio('0x5C30940A4544cA845272FE97c4A27F2ED2CD7B64')
+
+# asyncio.run(main())
+
+
+# from core.config import MONGO_CONNECT
+
+# update_collection = MONGO_CONNECT['Yield_Protocol']
+# store_id = "Mantle_yield_protocol"
+
+# data = update_collection.find_one({"_id":store_id})
+# print(data)
+
+
+# from tasks.agent_tasks.macro_task import macro_task
+
+# result = macro_task("0x5C30940A4544cA845272FE97c4A27F2ED2CD7B64")
+# print(result)
+
+
+from agents.orchestrator import AlertOrchestrator
 
 async def main():
-    pipeline = Pipeline()
-    data = await pipeline.user_portfolio('0x5C30940A4544cA845272FE97c4A27F2ED2CD7B64')
+    
+    event = {
+        'token':'0x38ncdhd',
+        "amount_usd" : 2000000,
+        "from_address" :  '0xkksdi',
+        "to_address" : '0Xwdhdjjsa',
+        "transaction_hash" :  'ioiqnas',
+        "symbol" : '$ETH',
+        "block_number" :  12344
+    }
+    smart_money = AlertOrchestrator()
+    await smart_money.process_event(event)
 
 asyncio.run(main())

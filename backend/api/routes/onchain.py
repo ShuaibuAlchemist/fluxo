@@ -5,13 +5,14 @@ from tasks.agent_tasks.onchain_task import protocol_task
 
 from celery.result import AsyncResult
 from core import celery_app
+from core.pubsub.channel_manager import ChannelNames
 from models.redis_connect import db_connector
 
 router = APIRouter()
 redis_connect = db_connector(max_connections=5)
 redis_db = redis_connect.get_connection()
 
-active_sessions : dict[str, WebSocket] = {}
+smart_money_session : dict[str, WebSocket] = {}
 
 @router.get('/onchain')
 async def onchain():
@@ -49,17 +50,17 @@ async def get_onchain_result(task_id:str):
 
 
 
-@router.websocket('/whale_watcher')
+@router.websocket('/smart_money')
 async def whale_whatcher(websocket: WebSocket):
     print("🦈 New Whale Watcher Connection Request Received")
     """
-        Wesbsocket Route to stream Whale transfer events in real-time
+        Wesbsocket Route to stream smart transfer events in real-time
     """
 
     await websocket.accept()
     session_id = str(uuid.uuid4())
 
-    active_sessions[session_id] = websocket
+    smart_money_session[session_id] = websocket
     
     try:
         while True:
@@ -69,21 +70,22 @@ async def whale_whatcher(websocket: WebSocket):
 
     except WebSocketDisconnect:
         # Clean up when user disconnects
-        del active_sessions[session_id]
+        del smart_money_session[session_id]
         print(f"❌ User disconnected: {session_id}")
+
 
 # This function listens to Redis channel and forwards messages to connected websockets
 async def user_subscribed_tokens_update():
-    print("🔔 Starting Whale Transfer Listener...")
+    print("🔔 Starting smart Transfer Listener...")
     pubsub = redis_db.pubsub()
-    await pubsub.subscribe('token_watch_channel')
+    await pubsub.subscribe(ChannelNames.SMART_MONEY.value)
 
     async for message in pubsub.listen():
         if message['type'] == 'message':
             data = message['data']
             # Match data for whale transfer pattern
             # If metched Return data
-            for session_id, websocket in active_sessions.items():
+            for session_id, websocket in smart_money_session.items():
                 try:
                     await websocket.send_text(data)
                 except Exception as e:
